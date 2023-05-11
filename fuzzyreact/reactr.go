@@ -72,8 +72,6 @@ func (fr *FuzzyReAct) process(rtext string) (string, error) {
 
 	rest := rtext[idx+7:]
 
-	fmt.Println("@rest", rest)
-
 	actionIndex := strings.Index(rest, ":")
 	if actionIndex < 0 {
 		return "", fmt.Errorf("not found")
@@ -82,11 +80,6 @@ func (fr *FuzzyReAct) process(rtext string) (string, error) {
 	action := strings.TrimSpace(rest[:actionIndex])
 	input := strings.TrimSpace(rest[actionIndex+1:])
 
-	fmt.Println("@action", action)
-	fmt.Println("@input", input)
-
-	fmt.Println(fr.actions)
-
 	actionFn := fr.actions[action]
 	if actionFn == nil {
 		return "", fmt.Errorf("Unknown action: %s=>%s", action, input)
@@ -94,5 +87,5 @@ func (fr *FuzzyReAct) process(rtext string) (string, error) {
 
 	fmt.Printf("Running => %s %s\n", action, input)
 
-	return actionFn(input)
+	return actionFn(strings.Replace(input, "PAUSE", "", 1))
 }
