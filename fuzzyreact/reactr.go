@@ -2,42 +2,37 @@ package fuzzyreact
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
 
-var (
-	actionRe = regexp.MustCompile(`^Action: (\w+): (.*)$`)
-)
-
 type FuzzyReAct struct {
 	client  *openai.Client
+	system  string
 	actions map[string]func(qstr string) (string, error)
 }
 
 func New(apiKey string) *FuzzyReAct {
 
+	system, aFuns := buildPrompt()
+
 	client := openai.NewClient(apiKey)
 
 	return &FuzzyReAct{
 		client:  client,
-		actions: make(map[string]func(qstr string) (string, error)),
+		system:  system,
+		actions: aFuns,
 	}
 }
 
-func (fr *FuzzyReAct) Execute(question, system string, max int) error {
+func (fr *FuzzyReAct) Execute(question string, max int) error {
 
 	next := question
 
-	if system == "" {
-		system = buildPrompt()
-	}
+	fmt.Println(fr.system)
 
-	fmt.Println(system)
-
-	bot := newChatBot(fr.client, system)
+	bot := newChatBot(fr.client, fr.system)
 
 	i := 0
 	for max > i {
@@ -48,36 +43,56 @@ func (fr *FuzzyReAct) Execute(question, system string, max int) error {
 			return err
 		}
 
-		actions := []*regexp.Regexp{}
-		for _, line := range strings.Split(result, "\n") {
-			if match := actionRe.FindStringSubmatch(line); match != nil {
-				actions = append(actions, actionRe)
-			}
-		}
+		fmt.Println("@bot_execute", result)
+		fmt.Println("@actions", actions)
 
-		if len(actions) == 0 {
-			return nil
-		}
-
-		actionMatch := actions[0].FindStringSubmatch(result)
-		action, actionInput := actionMatch[1], actionMatch[2]
-
-		actionFn := fr.actions[action]
-		if actionFn == nil {
-			return fmt.Errorf("Unknown action: %s: %s", action, actionInput)
-		}
-
-		fmt.Printf(" -- running %s %s\n", action, actionInput)
-
-		observation, err := actionFn(actionInput)
+		observation, err := fr.process(result)
 		if err != nil {
 			return err
 		}
 
+		if observation == "" {
+			return nil
+		}
+
+		fmt.Println("@OBJ", observation)
+
 		next = fmt.Sprintf("Observation: %s", observation)
 		bot.addMessage("assistant", observation)
-
 	}
 
 	return nil
+}
+
+func (fr *FuzzyReAct) process(rtext string) (string, error) {
+	idx := strings.Index(rtext, "Action:")
+	if idx < 0 {
+		return "", nil
+	}
+
+	rest := rtext[idx+7:]
+
+	fmt.Println("@rest", rest)
+
+	actionIndex := strings.Index(rest, ":")
+	if actionIndex < 0 {
+		return "", fmt.Errorf("not found")
+	}
+
+	action := strings.TrimSpace(rest[:actionIndex])
+	input := strings.TrimSpace(rest[actionIndex+1:])
+
+	fmt.Println("@action", action)
+	fmt.Println("@input", input)
+
+	fmt.Println(fr.actions)
+
+	actionFn := fr.actions[action]
+	if actionFn == nil {
+		return "", fmt.Errorf("Unknown action: %s=>%s", action, input)
+	}
+
+	fmt.Printf("Running => %s %s\n", action, input)
+
+	return actionFn(input)
 }

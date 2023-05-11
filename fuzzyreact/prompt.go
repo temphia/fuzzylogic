@@ -15,15 +15,18 @@ type Action struct {
 
 var (
 	actions = []Action{{
-		Name:    "wikipedia",
-		Example: "Django",
-		Info:    "Returns a summary from searching Wikipedia",
+		Name:       "wikipedia",
+		Example:    "Django",
+		Info:       "Returns a summary from searching Wikipedia",
+		ActionFunc: Wikipedia,
 	}}
 )
 
-func buildPrompt() string {
+func buildPrompt() (string, map[string]func(string) (string, error)) {
 
 	var buf strings.Builder
+
+	actionFucs := make(map[string]func(string) (string, error))
 
 	buf.WriteString(`You run in a loop of Thought, Action, PAUSE, Observation.
 At the end of the loop you output an Answer
@@ -37,6 +40,7 @@ Your available actions are:
 
 	for _, action := range actions {
 		buf.WriteString(fmt.Sprintf("%s:\ne.g. %s: %s\n%s\n", action.Name, action.Name, action.Example, action.Info))
+		actionFucs[action.Name] = action.ActionFunc
 	}
 
 	buf.WriteString("\n")
@@ -58,6 +62,6 @@ You then output:
 	
 Answer: The capital of France is Paris`)
 
-	return buf.String()
+	return buf.String(), actionFucs
 
 }

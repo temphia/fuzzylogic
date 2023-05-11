@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/temphia/fuzzylogic/fuzzyreact"
 )
@@ -9,8 +10,8 @@ import (
 func main() {
 
 	fmt.Println("@hello")
-	fr := fuzzyreact.New("")
+	fr := fuzzyreact.New(os.Getenv("OPENAPI_KEY"))
 
-	fmt.Println(fr.Execute("tell me about kathmandu", "", 5))
+	fmt.Println(fr.Execute("tell me about nepal", 5))
 
 }

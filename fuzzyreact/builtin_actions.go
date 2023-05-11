@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -49,6 +50,15 @@ func Wikipedia(q string) (string, error) {
 		return "", err
 	}
 
-	return data.Query.Search[0].Snippet, nil
+	var buf strings.Builder
+
+	for _, search := range data.Query.Search {
+		buf.WriteString(search.Title)
+		buf.WriteString("\n")
+		buf.WriteString(search.Snippet)
+		buf.WriteString("\n\n")
+	}
+
+	return buf.String(), nil
 
 }

@@ -46,7 +46,7 @@ func (cb *ChatBot) execute(msg string) (string, error) {
 		Content: result,
 	})
 
-	return "", nil
+	return result, nil
 
 }
 
