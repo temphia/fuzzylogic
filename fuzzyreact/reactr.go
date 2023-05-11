@@ -35,10 +35,13 @@ func (fr *FuzzyReAct) Execute(question, system string, max int) error {
 		system = buildPrompt()
 	}
 
+	fmt.Println(system)
+
 	bot := newChatBot(fr.client, system)
 
 	i := 0
-	for max < i {
+	for max > i {
+		fmt.Println("@loop |>", i)
 		i = i + 1
 		result, err := bot.execute(next)
 		if err != nil {
