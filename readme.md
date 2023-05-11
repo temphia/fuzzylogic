@@ -1,6 +1,13 @@
 # FuzzyLogic
 
-Fuzzylogic repo contains integration code for [temphia](http://github.com/temphia/temphia) related to machine learning (what people usually call AI). 
+Fuzzylogic repo contains integration code for [temphia](http://github.com/temphia/temphia) related to machine learning (what people usually call AI). You can use it without stupid temphia too, just run cmd/react 
+
+```bash
+
+OPENAPI_KEY="sk-..." go run cmd/react/*.go tell me about tardigrade
+
+```
+
 
 ## fuzzymod
 
