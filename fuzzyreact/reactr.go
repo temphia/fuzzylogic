@@ -13,16 +13,25 @@ type FuzzyReAct struct {
 	actions map[string]func(qstr string) (string, error)
 }
 
-func New(apiKey string) *FuzzyReAct {
+func NewReActWithActions(apiKey string, actions []Action) *FuzzyReAct {
+	system, aFuns := BuildPrompt(actions)
+	return NewReActWithSystem(apiKey, system, aFuns)
 
-	system, aFuns := buildPrompt()
+}
+
+func NewReAct(apiKey string) *FuzzyReAct {
+	return NewReActWithActions(apiKey, GetActions())
+}
+
+func NewReActWithSystem(apiKey, system string,
+	actionFuncs map[string]func(string) (string, error)) *FuzzyReAct {
 
 	client := openai.NewClient(apiKey)
 
 	return &FuzzyReAct{
 		client:  client,
 		system:  system,
-		actions: aFuns,
+		actions: actionFuncs,
 	}
 }
 

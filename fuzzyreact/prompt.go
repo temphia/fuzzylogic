@@ -3,6 +3,7 @@ package fuzzyreact
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
 type Action struct {
@@ -20,9 +21,30 @@ var (
 		Info:       "Returns a summary from searching Wikipedia",
 		ActionFunc: Wikipedia,
 	}}
+
+	amLock sync.Mutex
 )
 
-func buildPrompt() (string, map[string]func(string) (string, error)) {
+func RegisterAction(action Action) {
+
+	amLock.Lock()
+	actions = append(actions, action)
+	amLock.Unlock()
+
+}
+
+func GetActions() []Action {
+	resp := make([]Action, 0, len(actions))
+	amLock.Lock()
+
+	resp = append(resp, actions...)
+
+	amLock.Unlock()
+	return resp
+
+}
+
+func BuildPrompt(bactions []Action) (string, map[string]func(string) (string, error)) {
 
 	var buf strings.Builder
 
@@ -38,7 +60,7 @@ Your available actions are:
 	
 `)
 
-	for _, action := range actions {
+	for _, action := range bactions {
 		buf.WriteString(fmt.Sprintf("%s:\ne.g. %s: %s\n%s\n", action.Name, action.Name, action.Example, action.Info))
 		actionFucs[action.Name] = action.ActionFunc
 	}

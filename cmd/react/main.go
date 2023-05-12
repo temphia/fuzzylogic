@@ -14,7 +14,7 @@ func main() {
 
 	fmt.Println("running_react_start |>", promot)
 
-	fr := fuzzyreact.New(os.Getenv("OPENAPI_KEY"))
+	fr := fuzzyreact.NewReAct(os.Getenv("OPENAPI_KEY"))
 	fmt.Println(fr.Execute(promot, 5))
 	fmt.Println("running_react_end")
 
