@@ -9,10 +9,13 @@ OPENAPI_KEY="sk-..." go run cmd/react/*.go tell me about tardigrade
 ```
 
 
-## fuzzymod
-
+### fuzzymod
 - Temphia module warapper for openai api
-
-## fuzzyreact
+### fuzzyreact
 
 - ReAct pattern executor for temphia using openapi api which is bashed on simon's [python implementation](https://til.simonwillison.net/llms/python-react-pattern)
+
+
+## Todo
+- [ ] import temphia package and warp as executor
+- [ ] implement better prompt builder
